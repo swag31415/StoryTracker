@@ -13,7 +13,10 @@
 <body>
   <insert-html link="https://swag31415.github.io/Portfolio/inserts/menu.html"></insert-html>
   <main class="container" id="app">
-    <!-- TODO Add body -->
+    <div>
+      <button @click="record()" v-if="!rec" class="btn green right">Start Recording</button>
+      <button @click="stop()" v-if="rec" class="btn red right">Stop Recording</button>
+    </div>
   </main>
   <insert-html link="https://swag31415.github.io/Portfolio/inserts/foot.html"></insert-html>
   <!-- HTML Inserts -->
