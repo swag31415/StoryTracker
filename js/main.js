@@ -12,12 +12,37 @@ function blobToDataURL(blob) {
   })
 }
 
+function add_story(audio) {
+  if (!Firebase.auth.user()) {
+    err('You need to be logged in')
+    return false
+  }
+  Firebase.firestore.add('stories', {
+    uid: Firebase.auth.user().uid,
+    audio: audio,
+    time: new Date().toISOString()
+  })
+}
+
+function get_stories() {
+  if (!Firebase.auth.user()) {
+    err('You need to be logged in')
+    return false
+  }
+  return Firebase.firestore.get(
+    'stories', false,
+    [['uid', '==', 'GdF36wf8MJVeYiYAZueUWZXhZuh1']],
+    [], false, false, false
+  )
+}
+
 const { createApp } = Vue
 const app = createApp({
   data() { return {
     chunks: [],
     rec: false,
-    audio: false
+    audio: false,
+    stories: []
   }},
   methods: {
     record() {
@@ -39,7 +64,7 @@ const app = createApp({
             new Blob(this.chunks, {type: 'audio/webm'})
           ).then(url => {
             this.audio = url
-            console.log(this.audio) // TODO remove
+            add_story(this.audio)
             suc('Recording Complete!')
           }).catch(error => {
             // Handle errors
@@ -62,6 +87,12 @@ const app = createApp({
       // Stop the recording
       if (this.rec) this.rec.stop()
       this.rec = false
+    },
+    async load() {
+      this.stories = (await get_stories()).map(d => ({...d.data(), docid: d.id}))
+    },
+    format_date(date) {
+      return new Date(Date.parse(date)).toLocaleString()
     }
   }
 }).mount('#app')

@@ -12,10 +12,16 @@
 
 <body>
   <insert-html link="https://swag31415.github.io/Portfolio/inserts/menu.html"></insert-html>
+  <h1 style="margin-top: 0;">Story Tracker</h1>
   <main class="container" id="app">
     <div>
-      <button @click="record()" v-if="!rec" class="btn green right">Start Recording</button>
-      <button @click="stop()" v-if="rec" class="btn red right">Stop Recording</button>
+      <button @click="record()" v-if="!rec" class="btn green">Start Recording</button>
+      <button @click="stop()" v-if="rec" class="btn red">Stop Recording</button>
+    </div>
+    <p class="grey-text">Your stories will show up below. <a href="#!" @click="load()">Refresh</a></p>
+    <div v-for="story in stories">
+      <h2 v-text="format_date(story.time)"></h2>
+      <audio controls :src="story.audio"></audio>
     </div>
   </main>
   <insert-html link="https://swag31415.github.io/Portfolio/inserts/foot.html"></insert-html>
