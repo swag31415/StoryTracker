@@ -1,3 +1,9 @@
+// I know it's really bad to have api keys in the open like this but
+// this is a free account where I can't get overcharged and I plan to
+// make the service availiable to the public, and I'll change the api
+// key once I have time and care to code a better solution
+const ASSEMBLY_AI_API_KEY = 'b97eef5fac7e4757ab5600899dc46f44'
+
 msg = msg => M.toast({html: msg, classes: 'teal'})
 suc = msg => M.toast({html: msg, classes: 'green'})
 err = msg => M.toast({html: msg, classes: 'red'})
@@ -12,6 +18,10 @@ function blobToDataURL(blob) {
   })
 }
 
+function dataURLToBlob(dataurl) {
+  return fetch(dataurl).then(r => r.blob())
+}
+
 function add_story(audio) {
   if (!Firebase.auth.user()) {
     err('You need to be logged in')
@@ -20,7 +30,8 @@ function add_story(audio) {
   Firebase.firestore.add('stories', {
     uid: Firebase.auth.user().uid,
     audio: audio,
-    time: new Date().toISOString()
+    time: new Date().toISOString(),
+    text: false
   })
 }
 
@@ -34,6 +45,17 @@ function get_stories() {
     [['uid', '==', 'GdF36wf8MJVeYiYAZueUWZXhZuh1']],
     [], false, false, false
   )
+}
+
+function post_assembly_ai(url, json) {
+  return fetch(url, {
+    method: 'POST',
+    headers: {
+      authorization: ASSEMBLY_AI_API_KEY,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(json)
+  }).then(r => r.json())
 }
 
 const { createApp } = Vue
@@ -93,6 +115,32 @@ const app = createApp({
     },
     format_date(date) {
       return new Date(Date.parse(date)).toLocaleString()
+    },
+    async transcribe(story) {
+      if (story.text) return false
+      story_blob = await dataURLToBlob(story.audio)
+      path = `/tmp/rec${Math.random()}.webm`
+      await Firebase.storage.upload(path, story_blob)
+      resp = await fetch('https://api.assemblyai.com/v2/transcript', {
+        method: 'POST',
+        headers: {
+          authorization: ASSEMBLY_AI_API_KEY,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({audio_url: await Firebase.storage.get_link(path)})
+      }).then(r => r.json())
+      while (resp.status != 'completed') {
+        msg(resp.status)
+        await new Promise(res => setTimeout(res, 2000))
+        resp = await fetch('https://api.assemblyai.com/v2/transcript/' + resp.id, {
+          headers: {authorization: ASSEMBLY_AI_API_KEY}
+        }).then(r => r.json())
+      }
+      await Firebase.storage.delete(path)
+      story.text = resp.text
+      let {docid, ...data} = story
+      await Firebase.firestore.update('stories', docid, data)
+      suc('Transcription Complete!')
     }
   }
 }).mount('#app')

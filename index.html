@@ -21,7 +21,9 @@
     <p class="grey-text">Your stories will show up below. <a href="#!" @click="load()">Refresh</a></p>
     <div v-for="story in stories">
       <h2 v-text="format_date(story.time)"></h2>
-      <audio controls :src="story.audio"></audio>
+      <div><audio controls :src="story.audio"></audio></div>
+      <div v-if="!story.text"><button @click="transcribe(story)" class="btn">Transcribe</button></div>
+      <p v-if="story.text" v-text="story.text"></p>
     </div>
   </main>
   <insert-html link="https://swag31415.github.io/Portfolio/inserts/foot.html"></insert-html>
