@@ -54,6 +54,9 @@
             <a class="btn modal-trigger" :href="'#modal-' + story.docid">Edit</a>
           </div>
           <div class="col">
+            <button class="btn black" @click="save(story)">Download</button>
+          </div>
+          <div class="col">
             <button class="btn red" @click="drop(story.docid)">Delete</button>
           </div>
         </div>

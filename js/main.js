@@ -22,6 +22,13 @@ function dataURLToBlob(dataurl) {
   return fetch(dataurl).then(r => r.blob())
 }
 
+function download_url(dataurl, filename) {
+  link = document.createElement('a')
+  link.href = dataurl
+  link.download = filename
+  link.click()
+}
+
 function add_story(audio, title) {
   Firebase.firestore.add('stories', {
     uid: Firebase.auth.user().uid,
@@ -175,6 +182,13 @@ const app = createApp({
       Firebase.firestore.update('stories', docid, data)
       .then(() => suc('Updated story!'))
       .catch(() => err('Error updating story'))
+    },
+    async save(story) {
+      download_url(story.audio, story.title + '.webm')
+      if (story.text) {
+        text_url = await blobToDataURL(new Blob([story.text], {type: 'text/plain'}))
+        download_url(text_url, story.title + '.txt')
+      }
     }
   }
 }).mount('#app')
