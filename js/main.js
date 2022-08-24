@@ -22,29 +22,24 @@ function dataURLToBlob(dataurl) {
   return fetch(dataurl).then(r => r.blob())
 }
 
-function add_story(audio) {
-  if (!Firebase.auth.user()) {
-    err('You need to be logged in')
-    return false
-  }
+function add_story(audio, title) {
   Firebase.firestore.add('stories', {
     uid: Firebase.auth.user().uid,
     audio: audio,
-    time: new Date().toISOString(),
-    text: false
+    time: Date.parse(new Date().toISOString()),
+    text: false,
+    title: title
   })
 }
 
 function get_stories() {
-  if (!Firebase.auth.user()) {
-    err('You need to be logged in')
-    return false
-  }
-  return Firebase.firestore.get(
+  stories = Firebase.firestore.get(
     'stories', false,
-    [['uid', '==', 'GdF36wf8MJVeYiYAZueUWZXhZuh1']],
-    [], false, false, false
+    [['uid', '==', Firebase.auth.user().uid]],
+    [['time']], false, false, false
   )
+  suc('Got the stories!')
+  return stories
 }
 
 function post_assembly_ai(url, json) {
@@ -64,7 +59,10 @@ const app = createApp({
     chunks: [],
     rec: false,
     audio: false,
-    stories: []
+    stories: [],
+    logged_in: false,
+    login_form: {name: '', pass: ''},
+    story_name: 'Untitled'
   }},
   methods: {
     record() {
@@ -86,7 +84,7 @@ const app = createApp({
             new Blob(this.chunks, {type: 'audio/webm'})
           ).then(url => {
             this.audio = url
-            add_story(this.audio)
+            add_story(this.audio, this.story_name)
             suc('Recording Complete!')
           }).catch(error => {
             // Handle errors
@@ -114,7 +112,7 @@ const app = createApp({
       this.stories = (await get_stories()).map(d => ({...d.data(), docid: d.id}))
     },
     format_date(date) {
-      return new Date(Date.parse(date)).toLocaleString()
+      return new Date(Number(date)).toLocaleString()
     },
     async transcribe(story) {
       if (story.text) return false
@@ -141,6 +139,31 @@ const app = createApp({
       let {docid, ...data} = story
       await Firebase.firestore.update('stories', docid, data)
       suc('Transcription Complete!')
+    },
+    logout() {
+      Firebase.auth.logout()
+      .then(() => suc('Logged out successfully'))
+      .catch(() => err('Error logging out'))
+      window.location.reload()
+    },
+    login() {
+      Firebase.auth.login(this.login_form.name, this.login_form.pass)
+      .then(() => suc('Logged in successfully'))
+      .catch(() => err('Error logging in'))
+      this.login_form.name = ''
+      this.login_form.pass = ''
+    },
+    signup() {
+      Firebase.auth.create(this.login_form.name, this.login_form.pass)
+      .then(() => suc('Signed up successfully'))
+      .catch(() => err('Error signing up'))
+      this.login_form.name = ''
+      this.login_form.pass = ''
     }
   }
 }).mount('#app')
+
+m_ready.then(() => {
+  app.logged_in = Firebase.auth.user()
+  Firebase.auth.set_on_auth_change(user => app.logged_in = user)
+})

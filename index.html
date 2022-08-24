@@ -14,16 +14,44 @@
   <insert-html link="https://swag31415.github.io/Portfolio/inserts/menu.html"></insert-html>
   <h1 style="margin-top: 0;">Story Tracker</h1>
   <main class="container" id="app">
-    <div>
-      <button @click="record()" v-if="!rec" class="btn green">Start Recording</button>
-      <button @click="stop()" v-if="rec" class="btn red">Stop Recording</button>
+    <div v-if="!logged_in">
+      <div class="row">
+        <div class="input-field col s12 m4">
+          <input type="text" v-model="login_form.name"/>
+          <label>Email</label>
+        </div>
+        <div class="input-field col s12 m4">
+          <input type="password" v-model="login_form.pass"/>
+          <label>Password</label>
+        </div>
+        <div class="input-field col s6 m2">
+          <button class="btn green" @click="login()">Login</button>
+        </div>
+        <div class="input-field col s6 m2">
+          <button class="btn blue" @click="signup()">Sign Up</button>
+        </div>
+      </div>
     </div>
-    <p class="grey-text">Your stories will show up below. <a href="#!" @click="load()">Refresh</a></p>
-    <div v-for="story in stories">
-      <h2 v-text="format_date(story.time)"></h2>
-      <div><audio controls :src="story.audio"></audio></div>
-      <div v-if="!story.text"><button @click="transcribe(story)" class="btn">Transcribe</button></div>
-      <p v-if="story.text" v-text="story.text"></p>
+    <div v-if="logged_in">
+      <p>You are logged in as <span v-text="logged_in.displayName || logged_in.email"></span>. <a href="#!" @click="logout()">Logout</a></p>
+      <div class="row">
+        <div class="input-field col s6">
+          <input type="text" v-model="story_name"/>
+          <label class="active">Story Name</label>
+        </div>
+        <div class="input-field col s6">
+          <button @click="record()" v-if="!rec" class="btn green">Start Recording</button>
+          <button @click="stop()" v-if="rec" class="btn red">Stop Recording</button>
+        </div>
+      </div>
+      <p class="grey-text">Your stories will show up below. <a href="#!" @click="load()">Refresh</a></p>
+      <div v-for="story in stories">
+        <h4 v-text="story.title || 'Untitled'"></h4>
+        <p v-text="format_date(story.time)"></p>
+        <div><audio controls :src="story.audio"></audio></div>
+        <div v-if="!story.text"><button @click="transcribe(story)" class="btn">Transcribe</button></div>
+        <p v-if="story.text" v-text="story.text"></p>
+      </div>
     </div>
   </main>
   <insert-html link="https://swag31415.github.io/Portfolio/inserts/foot.html"></insert-html>
