@@ -159,11 +159,23 @@ const app = createApp({
       .catch(() => err('Error signing up'))
       this.login_form.name = ''
       this.login_form.pass = ''
+    },
+    drop(docid) {
+      Firebase.firestore.drop('stories', docid)
+      .then(() => {
+        suc('Deleted successfully')
+        this.load()
+      })
+      .catch(() => err('Error deleting'))
     }
   }
 }).mount('#app')
 
 m_ready.then(() => {
   app.logged_in = Firebase.auth.user()
-  Firebase.auth.set_on_auth_change(user => app.logged_in = user)
+  Firebase.auth.set_on_auth_change(user => {
+    app.logged_in = user
+    if (app.logged_in) app.load()
+  })
+  if (app.logged_in) app.load()
 })

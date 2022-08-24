@@ -48,6 +48,14 @@
       <div v-for="story in stories">
         <h4 v-text="story.title || 'Untitled'"></h4>
         <p v-text="format_date(story.time)"></p>
+        <div class="row">
+          <div class="col s3">
+            <button class="btn">Edit</button>
+          </div>
+          <div class="col s3">
+            <button class="btn red" @click="drop(story.docid)">Delete</button>
+          </div>
+        </div>
         <div><audio controls :src="story.audio"></audio></div>
         <div v-if="!story.text"><button @click="transcribe(story)" class="btn">Transcribe</button></div>
         <p v-if="story.text" v-text="story.text"></p>
