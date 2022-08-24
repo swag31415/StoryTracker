@@ -110,6 +110,8 @@ const app = createApp({
     },
     async load() {
       this.stories = (await get_stories()).map(d => ({...d.data(), docid: d.id}))
+      // For the modals
+      setTimeout(() => M.AutoInit(), 200)
     },
     format_date(date) {
       return new Date(Number(date)).toLocaleString()
@@ -167,6 +169,12 @@ const app = createApp({
         this.load()
       })
       .catch(() => err('Error deleting'))
+    },
+    update(story) {
+      let {docid, ...data} = story
+      Firebase.firestore.update('stories', docid, data)
+      .then(() => suc('Updated story!'))
+      .catch(() => err('Error updating story'))
     }
   }
 }).mount('#app')

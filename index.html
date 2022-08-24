@@ -33,6 +33,7 @@
       </div>
     </div>
     <div v-if="logged_in">
+      <p class="orange-text">Hey there! I hope you like the story tracker! It does cost me some <span class="green-text">money</span> to store your data securely and transcribe the audio so please <a href="https://venmo.com/code?user_id=2762932203028480590">Venmo me</a> @swag31415. <span class="green-text">Five bucks</span> would be great. Thanks!</p>
       <p>You are logged in as <span v-text="logged_in.displayName || logged_in.email"></span>. <a href="#!" @click="logout()">Logout</a></p>
       <div class="row">
         <div class="input-field col s6">
@@ -49,18 +50,64 @@
         <h4 v-text="story.title || 'Untitled'"></h4>
         <p v-text="format_date(story.time)"></p>
         <div class="row">
-          <div class="col s3">
-            <button class="btn">Edit</button>
+          <div class="col">
+            <a class="btn modal-trigger" :href="'#modal-' + story.docid">Edit</a>
           </div>
-          <div class="col s3">
+          <div class="col">
             <button class="btn red" @click="drop(story.docid)">Delete</button>
           </div>
         </div>
         <div><audio controls :src="story.audio"></audio></div>
         <div v-if="!story.text"><button @click="transcribe(story)" class="btn">Transcribe</button></div>
         <p v-if="story.text" v-text="story.text"></p>
+        <div :id="'modal-' + story.docid" class="modal">
+          <div class="modal-content">
+            <h4 v-text="story.title || 'Untitled'"></h4>
+            <p v-text="format_date(story.time)"></p>
+            <div class="row">
+              <div class="input-field col s12">
+                <input type="text" v-model="story.title"/>
+                <label class="active">Story Name</label>
+              </div>
+              <div class="input-field col s12">
+                <textarea v-model="story.text" class="materialize-textarea"></textarea>
+                <label class="active">Transcript</label>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <a href="#!" class="modal-close btn-flat red-text">Cancel</a>
+            <a href="#!" class="modal-close btn-flat green-text" @click="update(story)">Save</a>
+          </div>
+        </div>
       </div>
     </div>
+    <h2>What is this?</h2>
+    <p>This is a way to record audio and written stories! You can use this to</p>
+    <ul class="browser-default">
+      <li>Write down the crazy things that happen to you and recall them later to your friends (or grandchildren)</li>
+      <li>Record your parents' or grandparents' stories so you can remember for them, and pass them on</li>
+      <li>Journal your life to look back on when you're old</li>
+    </ul>
+    <p>Essentially, human memory is not that good and stories are really important to us, so let's have computers remember these fantastic tales on our behalf.</p>
+    <h2>Data Privacy Notice</h2>
+    <p>Since you will be recording very personal stories on here I think it's important to fully disclose how I'm storing your data</p>
+    <ol class="browser-default">
+      <li>All recording is done in your browser</li>
+      <li>The complete audio file along with the time and the name of the story is uploaded to a Google Firestore Database
+        <ul class="browser-default">
+          <li>This is a very secure database and no one outside myself can access the data</li>
+          <li>The data is not encrypted right now, but I will set up encryption soon so that even I cannot access your data, only you can.</li>
+        </ul>
+      </li>
+      <li>When you click "Transcribe" the audio file goes to <a href="https://www.assemblyai.com/">Assembly AI</a> so please refer to their privacy policy for more details
+        <ul class="browser-default">
+          <li>I highly doubt that they will compromise your privacy, as they are a very reputable company with strong business interests to respect their users' privacy</li>
+          <li>While sending the data to Assembly AI your data is temporarily unencrypted, please keep your browser open to re-encrypt your data. I'm working on making it fully encrypted throughout the process.</li>
+        </ul>
+      </li>
+    </ol>
+    <p>Sorry if it seems really insecure as of now. I'll improve that as soon as I find time.</p>
   </main>
   <insert-html link="https://swag31415.github.io/Portfolio/inserts/foot.html"></insert-html>
   <!-- HTML Inserts -->
